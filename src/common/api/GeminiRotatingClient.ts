@@ -29,13 +29,23 @@ export class GeminiRotatingClient extends RotatingApiClient<GoogleGenAI> {
       const clientConfig: {
         apiKey?: string;
         vertexai: boolean;
-        baseURL?: string;
+        httpOptions?: { baseUrl?: string; headers?: Record<string, string> };
       } = {
         apiKey: cleanedApiKey === '' ? undefined : cleanedApiKey,
         vertexai: authType === AuthType.USE_VERTEX_AI,
       };
       if (config.baseURL) {
-        clientConfig.baseURL = config.baseURL;
+        // 自定义 baseUrl 通常指向 Bearer 鉴权的代理网关。SDK 默认只发 x-goog-api-key，
+        // 这里额外注入 Authorization: Bearer 以兼容此类代理；同时保留 apiKey 字段，
+        // 让走原生 Google API 的代理也能正常工作。
+        const headers: Record<string, string> = {};
+        if (cleanedApiKey) {
+          headers.Authorization = `Bearer ${cleanedApiKey}`;
+        }
+        clientConfig.httpOptions = {
+          baseUrl: config.baseURL,
+          ...(Object.keys(headers).length > 0 && { headers }),
+        };
       }
       return new GoogleGenAI(clientConfig);
     };

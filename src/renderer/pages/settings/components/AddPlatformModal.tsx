@@ -325,14 +325,6 @@ const AddPlatformModal = ModalHOC<{
     }
   }, [platform]);
 
-  // 处理自动修复的 base_url / Handle auto-fixed base_url
-  useEffect(() => {
-    if (modelListState.data?.fix_base_url) {
-      form.setFieldValue('baseUrl', modelListState.data.fix_base_url);
-      message.info(t('settings.baseUrlAutoFix', { base_url: modelListState.data.fix_base_url }));
-    }
-  }, [modelListState.data?.fix_base_url, form]);
-
   const handleSubmit = () => {
     form
       .validate()
